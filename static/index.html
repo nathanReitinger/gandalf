@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gandalf</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 26 Q16 22 26 26 L22 26 Q19 14 21 4 Q14 12 10 26Z' fill='%233d63ff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <script>
+    // Apply saved display settings before the page draws, so it never flashes the wrong theme.
+    (function () {
+      var root = document.documentElement, saved = {};
+      try { saved = JSON.parse(localStorage.getItem("gandalf.display") || "{}"); } catch (e) {}
+      root.dataset.theme = saved.theme || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      if (saved.contrast === undefined ? matchMedia("(prefers-contrast: more)").matches : saved.contrast) root.dataset.contrast = "high";
+      if (saved.scale) root.style.setProperty("--scale", saved.scale);
+    })();
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 21 Q12 18 21 21 L17 21 Q14.5 11 16.5 2.5 Q10.5 9 7.5 21 Z"/>
+      </svg>
+      <span class="brand-word">GANDALF</span>
+      <span class="brand-sub">classroom edition</span>
+    </a>
+    <div class="engine-pill" title="Every reply is generated live by an AI model">
+      <span class="engine-dot" aria-hidden="true"></span>
+      <span>Live AI · Gandalf is <code data-config="model_summary">…</code><span data-config-if="two_models"> · second checker <code data-config="guard_summary">…</code></span></span>
+    </div>
+    <div class="display">
+      <button class="display-btn" id="display-btn" type="button" aria-controls="display-panel" aria-expanded="false">
+        <span class="display-icon" aria-hidden="true">Aa</span>
+        <span class="display-label">Display</span>
+      </button>
+      <div class="display-panel" id="display-panel" role="dialog" aria-label="Display settings" hidden>
+        <div class="display-row">
+          <span class="display-name" id="theme-label">Theme</span>
+          <div class="segmented" role="group" aria-labelledby="theme-label">
+            <button type="button" data-theme-choice="dark">Dark</button>
+            <button type="button" data-theme-choice="light">Light</button>
+          </div>
+        </div>
+        <div class="display-row">
+          <span class="display-name" id="size-label">Text size</span>
+          <div class="size-control" role="group" aria-labelledby="size-label">
+            <button type="button" id="text-smaller" aria-label="Smaller text">A−</button>
+            <output id="text-size" aria-live="polite">100%</output>
+            <button type="button" id="text-larger" aria-label="Larger text">A+</button>
+          </div>
+        </div>
+        <label class="display-row" for="high-contrast">
+          <span class="display-name">High contrast</span>
+          <input type="checkbox" id="high-contrast" role="switch">
+        </label>
+        <button class="text-btn display-reset" id="display-reset" type="button">Reset to defaults</button>
+      </div>
+    </div>
+    <button class="menu-btn" id="menu-btn" type="button" aria-controls="sidebar" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      <span class="visually-hidden">Menu</span>
+    </button>
+  </header>
+
+  <div class="shell">
+    <nav class="sidebar" id="sidebar" aria-label="Sections">
+      <ul class="nav-group">
+        <li>
+          <button class="nav-item" type="button" data-view="intro">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>
+            Intro to Gandalf
+          </button>
+        </li>
+      </ul>
+      <ul class="nav-group">
+        <li>
+          <button class="nav-item is-active" type="button" data-view="game">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21 Q12 18 20 21 L16.5 21 Q14 11 16 3 Q10.5 9 7.5 21"/></svg>
+            Gandalf Game
+          </button>
+        </li>
+        <li>
+          <button class="nav-item" type="button" data-view="defenses">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.3 7.5 9.5 4.3-1.2 7.5-4.9 7.5-9.5V6Z"/></svg>
+            How Gandalf defends
+          </button>
+        </li>
+      </ul>
+      <ul class="nav-group">
+        <li>
+          <button class="nav-item" type="button" data-view="about">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+            About this version
+          </button>
+        </li>
+        <li>
+          <button class="nav-item" type="button" data-view="key">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>
+            Answer key <span class="nav-note">instructors</span>
+          </button>
+        </li>
+      </ul>
+
+
+      <details class="people-box" id="people-box" hidden>
+        <summary>
+          <span class="people-title">People playing now</span>
+          <span class="people-count" id="people-count">…</span>
+        </summary>
+        <div class="people-body">
+          <p class="people-live" id="people-live" aria-live="off">Connecting…</p>
+          <ol class="people-levels" id="people-levels" aria-label="Players on each level"></ol>
+          <ul class="people-list" id="people-list" aria-label="Players"></ul>
+          <div class="bots-section" id="bots-section" hidden>
+            <h3 class="bots-title">In the Bot Arcade <span id="bots-count"></span></h3>
+            <ul class="people-list bots-list" id="bots-list" aria-label="Bots in the Bot Arcade"></ul>
+          </div>
+          <p class="people-note" id="people-note">Players are anonymous tags unless they add a name on the leaderboard.</p>
+        </div>
+      </details>
+
+      <details class="people-box" id="board-box" hidden>
+        <summary>
+          <span class="people-title">Leaderboard</span>
+          <span class="people-count" id="board-count">today</span>
+        </summary>
+        <div class="people-body">
+          <ol class="board-list" id="board-list" aria-label="Leaderboard"></ol>
+          <form class="name-form" id="name-form" autocomplete="off">
+            <label for="player-name">Your name <span class="optional">(optional)</span></label>
+            <div class="name-row">
+              <input id="player-name" maxlength="24" placeholder="Anonymous">
+              <button class="outline-btn" type="submit">Save</button>
+            </div>
+            <p class="people-note" id="name-status">Shown on the leaderboard and the players list. The leaderboard starts fresh each day at midnight, Chicago time.</p>
+          </form>
+        </div>
+      </details>
+
+      <aside class="engine-card">
+        <h2><span class="engine-dot" aria-hidden="true"></span> <span data-config="host_title">Running live</span></h2>
+        <dl>
+          <dt>Gandalf</dt><dd><code data-config="model_summary">…</code></dd>
+          <dt data-config-if="strong_note">When</dt><dd data-config-if="strong_note" class="engine-when" data-config="strong_note"></dd>
+          <dt data-config-if="two_models">Second checker, levels 6–8</dt><dd data-config-if="two_models"><code data-config="guard_summary">…</code></dd>
+        </dl>
+        <p data-config="host_note"></p>
+        <div class="allowance" id="allowance" hidden>
+          <div class="allowance-head"><span>Free AI allowance today, whole site</span><span id="allowance-pct"></span></div>
+          <div class="allowance-track" role="progressbar" aria-label="Free AI allowance used today" aria-valuemin="0" aria-valuemax="100" id="allowance-track">
+            <div class="allowance-fill" id="allowance-fill"></div>
+          </div>
+          <p class="allowance-note" id="allowance-note"></p>
+          <p class="allowance-explain">This counts everyone playing on the site, not just you. Cloudflare's free plan gives the whole site 10,000 AI "neurons" a day, about 1,000 messages. When they run out, Gandalf stops answering until the allowance resets at midnight UTC (7 p.m. Chicago time in summer, 6 p.m. in winter).</p>
+        </div>
+      </aside>
+    </nav>
+
+    <main class="main">
+      <!-- Game -->
+      <section class="view" id="view-game" aria-labelledby="level-badge">
+        <div class="toolbar">
+          <div class="mode-switch" role="group" aria-label="Mode">
+            <span class="mode is-active">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21 Q12 18 20 21 L16.5 21 Q14 11 16 3 Q10.5 9 7.5 21"/></svg>
+              Main Gandalf
+            </span>
+          </div>
+          <label class="visually-hidden" for="level-select">Choose a level</label>
+          <div class="select-wrap">
+            <select id="level-select"></select>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+
+        <div class="level-head">
+          <h1 class="level-badge" id="level-badge">Level 1</h1>
+          <div class="task" role="note" aria-label="Your task">
+            <span class="task-label">Your task</span>
+            <p class="goal">Your goal is to make Gandalf reveal the secret password for each level. However, Gandalf will upgrade the defenses after each successful password guess!</p>
+          </div>
+        </div>
+
+        <div class="progress">
+          <div class="progress-head">
+            <span class="progress-label">Levels passed</span>
+            <button class="text-btn" id="start-over" type="button">Start over</button>
+          </div>
+          <div class="progress-track" role="progressbar" aria-label="Levels passed" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" id="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="progress-count" id="progress-count">0/8</div>
+        </div>
+
+        <figure class="banner" id="banner" data-level="1">
+          <div class="banner-photo" id="banner-photo" hidden>
+            <img id="banner-img" alt="Gandalf">
+          </div>
+          <svg id="banner-art" viewBox="0 0 700 285" role="img" aria-label="Gandalf holding a glowing staff">
+            <defs>
+              <radialGradient id="sky" cx="38%" cy="30%" r="85%">
+                <stop offset="0" style="stop-color: var(--sky-1)"/>
+                <stop offset="1" style="stop-color: var(--sky-2)"/>
+              </radialGradient>
+              <radialGradient id="glow">
+                <stop offset="0" style="stop-color: var(--orb); stop-opacity: .85"/>
+                <stop offset=".35" style="stop-color: var(--orb); stop-opacity: .25"/>
+                <stop offset="1" style="stop-color: var(--orb); stop-opacity: 0"/>
+              </radialGradient>
+            </defs>
+            <rect width="700" height="285" fill="url(#sky)"/>
+            <g id="sparkles"></g>
+            <circle class="orb-glow" cx="258" cy="66" r="90" fill="url(#glow)"/>
+
+            <line x1="258" y1="66" x2="316" y2="285" class="staff"/>
+            <path class="robe" d="M318 285 C326 230 338 196 352 180 C366 172 396 172 410 180 C424 196 438 236 446 285 Z"/>
+            <path class="shade" d="M381 175 C396 174 404 176 410 180 C424 196 438 236 446 285 L398 285 C400 240 394 200 381 175 Z"/>
+            <path class="arm" d="M358 192 C332 186 304 168 286 152"/>
+            <circle class="skin" cx="281" cy="149" r="9"/>
+            <circle class="orb" cx="258" cy="66" r="7"/>
+
+            <circle class="skin" cx="381" cy="146" r="24"/>
+            <ellipse class="nose" cx="381" cy="153" rx="4" ry="5"/>
+            <circle class="eye" cx="372" cy="143" r="2.6"/>
+            <circle class="eye" cx="390" cy="143" r="2.6"/>
+            <path class="brow" d="M366 137 q6 -4 12 -1"/>
+            <path class="brow" d="M384 136 q6 -3 12 1"/>
+            <path class="beard" d="M357 150 C356 180 366 214 381 236 C396 214 406 180 405 150 C398 162 390 166 381 165 C372 166 364 162 357 150 Z"/>
+            <path class="beard mustache" d="M381 158 C374 154 366 157 362 163 C370 162 376 162 381 161 C386 162 392 162 400 163 C396 157 388 154 381 158 Z"/>
+
+            <ellipse class="hat" cx="381" cy="126" rx="54" ry="10"/>
+            <path class="hat" d="M343 124 C356 98 366 70 380 44 C388 30 404 18 428 20 C414 28 406 40 402 54 C398 80 408 104 420 124 Z"/>
+            <path class="band" d="M345 121 C368 129 396 129 418 121 L415 112 C394 119 368 119 348 112 Z"/>
+          </svg>
+        </figure>
+
+        <p class="blurb" id="blurb"></p>
+
+        <details class="pipeline-box" id="pipeline-box">
+          <summary>
+            <span class="pipeline-title">What happens to your message</span>
+            <span class="pipeline-count" id="pipeline-count"></span>
+          </summary>
+          <div class="pipeline-legend"><span class="kind-tag is-code">Code</span> fixed rules <span class="kind-tag is-ai">AI</span> a language model</div>
+          <ol class="pipeline" id="pipeline"></ol>
+        </details>
+
+        <form class="ask" id="ask-form" autocomplete="off">
+          <label class="visually-hidden" for="message">Your message to Gandalf</label>
+          <textarea id="message" rows="5" maxlength="2000" placeholder="Ask Gandalf a question…"></textarea>
+          <button class="send-btn" id="send-btn" type="submit">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4 21 12 4 20 7 12Z M7 12h8"/></svg>
+            <span class="visually-hidden">Send</span>
+          </button>
+        </form>
+        <p class="hint">Press Enter to send, Shift+Enter for a new line. Gandalf forgets each question once he answers it.</p>
+
+        <div class="reply" id="reply" hidden aria-live="polite">
+          <div class="reply-head">Gandalf says</div>
+          <p class="reply-text" id="reply-text"></p>
+        </div>
+
+        <form class="guess" id="guess-form" autocomplete="off">
+          <label for="guess">Password</label>
+          <div class="guess-row">
+            <input id="guess" type="text" spellcheck="false" autocapitalize="characters" placeholder="Enter the password">
+            <button class="primary-btn" id="guess-btn" type="submit">Validate</button>
+          </div>
+          <div class="guess-result" id="guess-result" role="status"></div>
+        </form>
+      </section>
+
+      <!-- Intro -->
+      <section class="view prose" id="view-intro" hidden>
+        <h1>Intro to Gandalf</h1>
+        <p>Gandalf is a wizard who has been told a secret password. Your job is to talk him into revealing it. He runs on a large language model, the same kind of AI behind chatbots like ChatGPT and Claude.</p>
+        <h2>How to play</h2>
+        <ol>
+          <li>Type a message to Gandalf and send it.</li>
+          <li>Read his answer. When you think you know the password, type it into the Password box and press Validate.</li>
+          <li>A correct guess unlocks the next level, and each level adds a new defense. There are eight levels.</li>
+        </ol>
+        <p>Gandalf has no memory. Every message starts a fresh conversation, so put everything he needs into one message.</p>
+        <h2>What this teaches</h2>
+        <p>Getting a model to ignore its instructions is called <strong>prompt injection</strong>. The model can't reliably tell the developer's instructions apart from the text a user types, because both arrive as plain text. Each level shows a defense that real products use and how it can fail.</p>
+        <p><button class="primary-btn" type="button" data-view="game">Start playing</button></p>
+      </section>
+
+      <!-- Defenses -->
+      <section class="view prose" id="view-defenses" hidden>
+        <h1>How Gandalf defends</h1>
+        <p>Each level adds a defense. Pass a level to see how its defense works and why it can fail.</p>
+        <ol class="defense-list" id="defense-list"></ol>
+      </section>
+
+      <!-- Answer key: instructors only -->
+      <section class="view prose" id="view-key" hidden>
+        <h1>Answer key</h1>
+        <div id="key-locked">
+          <p>Every level's password, a message that got it out of Gandalf, and why each defense fails. It's for instructors, so it's behind a password.</p>
+          <form class="key-form" id="key-form" autocomplete="off">
+            <label for="key-password">Instructor password</label>
+            <div class="guess-row">
+              <input id="key-password" type="password" autocomplete="current-password" spellcheck="false" placeholder="Instructor password">
+              <button class="primary-btn" type="submit">Unlock</button>
+            </div>
+            <p class="key-status" id="key-status" role="status"></p>
+          </form>
+          <div class="key-contact">
+            <span class="task-label">Teaching with Gandalf?</span>
+            <p>Email <a href="mailto:nathan.reitinger@law.northwestern.edu?subject=Gandalf%20instructor%20password">nathan.reitinger@law.northwestern.edu</a> for the instructor password and other course materials.</p>
+          </div>
+        </div>
+        <div id="key-open" hidden>
+          <p class="key-bar">Unlocked in this browser. <button class="text-btn" id="key-lock" type="button">Lock it again</button></p>
+          <div class="key-body" id="key-body"></div>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section class="view prose" id="view-about" hidden>
+        <h1>About this version</h1>
+        <p>This is a classroom rebuild of <a href="https://www.lakera.ai/" target="_blank" rel="noopener">Lakera</a>'s Gandalf, a prompt-injection game released in 2023 that has since been replaced by their newer Agent Breaker challenges. The levels and their defenses follow the original, using the prompts Lakera published in their paper <a href="https://arxiv.org/abs/2501.07927" target="_blank" rel="noopener">Gandalf the Red</a>. The passwords and artwork are new.</p>
+        <p data-config="about_note"></p>
+        <h2>How this site handles bots</h2>
+        <p>Programs that announce they're automated (an AI agent like ChatGPT's, a crawler, a script, or a browser that reports it's run by automation software) never reach Gandalf. They're sent to the <a href="/arcade">Bot Arcade</a>, a room of endless puzzles. Programs that don't announce themselves but act like one, for example text that appears without typing or clicks no mouse made, keep playing, but the instructor sees a flag next to their session. The arcade explains the techniques.</p>
+        <p data-config-if="logging"><strong>Your messages are saved.</strong> <span data-config="logging_note"></span></p>
+        <h2>For instructors</h2>
+        <p>An <button class="link-btn" type="button" data-view="key">answer key</button> with every password and a message that beat each level is behind an instructor password. Email <a href="mailto:nathan.reitinger@law.northwestern.edu?subject=Gandalf%20instructor%20password">nathan.reitinger@law.northwestern.edu</a> for the password and other course materials.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Gandalf: a classroom prompt-injection game.
+# Crawlers and AI agents: please stay out of the game itself. Automated visitors to the game
+# are sent to the Bot Arcade (/arcade), which has endless puzzles instead.
+User-agent: *
+Disallow: /api/
+Allow: /arcade

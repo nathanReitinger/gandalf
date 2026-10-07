@@ -1,0 +1,15 @@
+{
+  "name": "gandalf",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "python3 build.py",
+    "test": "python3 build.py && node check.mjs",
+    "dev": "python3 build.py && wrangler dev",
+    "deploy": "python3 build.py && node check.mjs && wrangler deploy",
+    "autodeploy": "node autodeploy.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.147.0"
+  }
+}

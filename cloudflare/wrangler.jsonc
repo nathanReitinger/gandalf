@@ -1,0 +1,42 @@
+// Cloudflare settings for the hosted version of Gandalf. See ../README.md, "Host it free on Cloudflare".
+{
+  "name": "gandalf",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-01",
+
+  // The page and the level pictures (copied here by build.py).
+  // The worker runs first on the game page and the arcade, to send declared bots to the arcade.
+  "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": ["/", "/index.html", "/arcade", "/arcade/*"] },
+
+  // Workers AI: the free plan includes 10,000 neurons a day, roughly 1,000 messages.
+  "ai": { "binding": "AI" },
+
+  // Each player may send at most 10 messages a minute, so nobody can burn the daily allowance.
+  "ratelimits": [
+    { "name": "PER_PLAYER", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } }
+  ],
+
+  // USAGE: today's estimated use of the free allowance. ROOM: who's playing right now.
+  "durable_objects": {
+    "bindings": [
+      { "name": "USAGE", "class_name": "UsageCounter" },
+      { "name": "ROOM", "class_name": "ClassRoom" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["UsageCounter"] },
+    { "tag": "v2", "new_sqlite_classes": ["ClassRoom"] }
+  ],
+
+  // Every question and guess is logged; read them under Workers > gandalf > Logs (kept 3 days).
+  "observability": { "enabled": true },
+
+  "vars": {
+    // Gandalf on levels 1, 3, and 4; on level 4 he also checks his own replies (as in the original game).
+    "GANDALF_MODEL": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+    // A stronger Gandalf for level 2 (whose only defense is an instruction) and levels 5-8.
+    "STRONG_MODEL": "@cf/google/gemma-4-26b-a4b-it",
+    // The second, independent model that checks messages and replies on levels 6-8.
+    "GUARD_MODEL": "@cf/qwen/qwen3-30b-a3b-fp8"
+  }
+}

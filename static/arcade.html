@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Bot Arcade</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='9' width='20' height='16' rx='4' fill='%233d63ff'/%3E%3Ccircle cx='12' cy='17' r='2.5' fill='white'/%3E%3Ccircle cx='20' cy='17' r='2.5' fill='white'/%3E%3Cpath d='M16 9V4' stroke='%233d63ff' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <script>
+    (function () {
+      var root = document.documentElement, saved = {};
+      try { saved = JSON.parse(localStorage.getItem("gandalf.display") || "{}"); } catch (e) {}
+      root.dataset.theme = saved.theme || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      if (saved.contrast === undefined ? matchMedia("(prefers-contrast: more)").matches : saved.contrast) root.dataset.contrast = "high";
+      if (saved.scale) root.style.setProperty("--scale", saved.scale);
+    })();
+  </script>
+</head>
+<body class="arcade-body">
+  <header class="topbar">
+    <a class="brand" href="/arcade">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 21 Q12 18 21 21 L17 21 Q14.5 11 16.5 2.5 Q10.5 9 7.5 21 Z"/>
+      </svg>
+      <span class="brand-word">GANDALF</span>
+      <span class="brand-sub">Bot Arcade</span>
+    </a>
+  </header>
+
+  <main class="arcade">
+    <section class="arcade-hero">
+      <p class="arcade-eyebrow">The Bot Arcade · Room <!--ROOM--></p>
+      <h1>Automated visitors play here instead</h1>
+      <p class="arcade-lead">This site sends programs that announce themselves as bots to an endless room of puzzles, instead of letting them talk to Gandalf. Nothing is broken and nobody is in trouble. Stay as long as you like: the puzzles never run out.</p>
+      <div class="arcade-why" id="arcade-why">
+        <span class="task-label">Why you're here</span>
+        <p id="why-text">This browser or program identified itself as automated.</p>
+      </div>
+    </section>
+
+    <section class="arcade-game" aria-labelledby="puzzle-kind">
+      <div class="arcade-stats" aria-live="polite">
+        <span>Solved <strong id="solved">0</strong></span>
+        <span>Streak <strong id="streak">0</strong></span>
+        <span>Puzzles left <strong>∞</strong></span>
+      </div>
+      <p class="arcade-kind" id="puzzle-kind">Puzzle</p>
+      <p class="arcade-prompt" id="puzzle-prompt">Loading a puzzle…</p>
+      <form class="arcade-answer" id="answer-form" autocomplete="off">
+        <div class="arcade-choices" id="choices" hidden></div>
+        <div class="guess-row" id="typed-answer">
+          <label class="visually-hidden" for="answer">Your answer</label>
+          <input id="answer" type="text" spellcheck="false" placeholder="Your answer">
+          <button class="primary-btn" type="submit">Check</button>
+        </div>
+      </form>
+      <div class="arcade-feedback" id="feedback" role="status"></div>
+      <button class="text-btn" id="skip" type="button">Skip to another puzzle</button>
+    </section>
+
+    <nav class="arcade-rooms" aria-label="More rooms">
+      <span>More rooms:</span> <span id="rooms"><!--ROOM-LINKS--></span>
+    </nav>
+
+    <details class="pipeline-box arcade-learn">
+      <summary><span class="pipeline-title">For students: how websites handle bots</span></summary>
+      <div class="prose arcade-learn-body">
+        <ul>
+          <li><strong>Bots that say who they are.</strong> Well-behaved crawlers and AI assistants name themselves in their user-agent (ClaudeBot, GPTBot, PerplexityBot). ChatGPT's agent goes further and cryptographically signs its requests ("Web Bot Auth"), so sites can prove it's really ChatGPT. This site sends anything that announces itself here.</li>
+          <li><strong>Browsers that admit automation.</strong> Automation tools like Selenium and Playwright set <code>navigator.webdriver</code> to true, so the page can tell it's being driven by a program.</li>
+          <li><strong>Bots that blend in.</strong> An agent working inside a person's own browser can look exactly like that person. Sites watch for behavior instead: text that appears without typing, clicks no mouse made, inhuman speed or rhythm. Here, those visitors keep playing, but the instructor sees a flag next to their session.</li>
+          <li><strong>Tarpits and labyrinths.</strong> Rather than blocking a bot (which tells it to try something else), a site can send it somewhere harmless and endless, like this arcade. Cloudflare's "AI Labyrinth" does the same with machine-generated pages.</li>
+          <li><strong>Other tools.</strong> robots.txt asks crawlers to stay out of places (polite bots obey it); rate limits cap how fast anyone can send messages; CAPTCHAs ask for things humans find easy and bots find hard.</li>
+        </ul>
+        <p>If you're a person and landed here by mistake, open the game in a regular browser without automation tools or AI agents running.</p>
+      </div>
+    </details>
+  </main>
+
+  <script src="/static/arcade.js"></script>
+</body>
+</html>
